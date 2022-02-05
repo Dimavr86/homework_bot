@@ -79,14 +79,14 @@ def check_response(response):
     список домашних работ, доступный в ответе API по ключу 'homeworks'.
     """
     try:
-        homeworks = response["homeworks"]
+        homeworks = response['homeworks']
     except KeyError:
         logger.error(KeyError)
         raise KeyError('В ответе нет ключа homeworks')
     if not isinstance(homeworks, list):
         raise TypeError
     if homeworks == []:
-        logger.debug("Новые статусы отсутствуют")
+        logger.debug('Новые статусы отсутствуют')
     return homeworks
 
 
