@@ -78,13 +78,15 @@ def check_response(response):
     Если ответ API соответствует ожиданиям, то функция возвращает
     список домашних работ, доступный в ответе API по ключу 'homeworks'.
     """
-    if ('homeworks') in response:
+    try:
         homeworks = response["homeworks"]
-        if homeworks == []:
-            logger.debug('Новые статусы отсутствуют')
-    else:
-        logger.error('В ответе от API нет ключа homeworks')
-        raise KeyError('В ответе от API нет ключа homeworks')
+    except KeyError:
+        logger.error(KeyError)
+        raise KeyError('В ответе нет ключа homeworks')
+    if not isinstance(homeworks, list):
+        raise TypeError
+    if homeworks == []:
+        logger.debug("Новые статусы отсутствуют")
     return homeworks
 
 
@@ -148,7 +150,7 @@ def main():
         except Exception as error:
             error_message = f'Сбой в работе программы: {error}'
             logger.error(error)
-            while not error_is_sent:
+            if not error_is_sent:
                 send_message(bot, error_message)
                 error_is_sent = True
             time.sleep(RETRY_TIME)
