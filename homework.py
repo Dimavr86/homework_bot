@@ -40,6 +40,7 @@ VERDICTS = {
 UNKNOWN_VERDICT = 'Недокументированный статус домашней работы'
 EXTRACT_ERROR = 'Ошибка извлечения данных о домашней работе'
 
+
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат.
     определяемый переменной окружения TELEGRAM_CHAT_ID.
