@@ -9,7 +9,7 @@ import requests
 from dotenv import load_dotenv
 from telegram import Bot
 
-import Exceptions
+import exceptions
 
 load_dotenv()
 
@@ -37,6 +37,8 @@ VERDICTS = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
+UNKNOWN_VERDICT = 'Недокументированный статус домашней работы'
+EXTRACT_ERROR = 'Ошибка извлечения данных о домашней работе'
 
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат.
@@ -47,7 +49,7 @@ def send_message(bot, message):
     try:
         logger.info('Сообщение в Telegram успешно отправлено')
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-    except Exceptions.TelegramApiError as t_err:
+    except exceptions.TelegramApiError as t_err:
         logger.error(f'Ошибка при отправке сообщения: {t_err}')
 
 
@@ -60,7 +62,7 @@ def get_api_answer(current_timestamp):
     params = {'from_date': timestamp}
     try:
         response = requests.get(url=ENDPOINT, params=params, headers=HEADERS)
-    except Exceptions.ConnectionApiError as api_err:
+    except exceptions.ConnectionApiError as api_err:
         logger.exception('Ошибка работы с API сервиса', exc_info=api_err)
         raise api_err
     try:
@@ -68,7 +70,7 @@ def get_api_answer(current_timestamp):
         if response.status_code != requests.codes.ok:
             response.raise_for_status()
         return result
-    except Exceptions.ResponseJsonEmpty as json_empty:
+    except exceptions.ResponseJsonEmpty as json_empty:
         logger.exception('Пустой ответ от API Яндекс', exc_info=json_empty)
 
 
@@ -101,12 +103,12 @@ def parse_status(homework):
         homework_status = homework['status']
         verdict = VERDICTS[homework_status]
         if homework_status not in VERDICTS:
-            logger.error('Недокументированный статус домашней работы')
-            raise Exception('Недокументированный статус домашней работы')
+            logger.error(UNKNOWN_VERDICT)
+            raise Exception(UNKNOWN_VERDICT)
         return f'Изменился статус проверки работы "{homework_name}". {verdict}'
     except KeyError:
-        logger.error('Ошибка извлечения данных о домашней работе')
-        raise KeyError('Ошибка извлечения данных о домашней работе')
+        logger.error(EXTRACT_ERROR)
+        raise KeyError(EXTRACT_ERROR)
 
 
 def check_tokens() -> bool:
